@@ -1,0 +1,202 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    color: #1a1a2e;
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+}
+
+header p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 600;
+}
+
+.form-group input[type="text"],
+.form-group input[type="tel"],
+.form-group input[type="date"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #4a90a4;
+}
+
+.time-slots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.time-slot {
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: #fff;
+    font-weight: 500;
+}
+
+.time-slot:hover:not(.booked) {
+    border-color: #4a90a4;
+    background: #f0f8ff;
+}
+
+.time-slot.selected {
+    background: #4a90a4;
+    color: #fff;
+    border-color: #4a90a4;
+}
+
+.time-slot.booked {
+    display: none;
+}
+
+.btn-book {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #4a90a4 0%, #357a8c 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.btn-book:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(74, 144, 164, 0.4);
+}
+
+.btn-book:active {
+    transform: translateY(0);
+}
+
+.confirmation {
+    text-align: center;
+    padding: 30px;
+    background: #e8f5e9;
+    border-radius: 15px;
+    margin-top: 20px;
+}
+
+.confirmation h2 {
+    color: #2e7d32;
+    margin-bottom: 15px;
+}
+
+.confirmation p {
+    color: #333;
+    line-height: 1.8;
+}
+
+.hidden {
+    display: none;
+}
+
+.no-slots {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #999;
+    padding: 20px;
+}
+
+.loading {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+}
+
+/* Owner Dashboard Styles */
+.admin-container {
+    max-width: 800px;
+}
+
+.bookings-list {
+    margin-top: 20px;
+}
+
+.booking-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-left: 4px solid #4a90a4;
+}
+
+.booking-card h3 {
+    color: #1a1a2e;
+    margin-bottom: 10px;
+}
+
+.booking-card p {
+    color: #666;
+    margin: 5px 0;
+}
+
+.booking-card .time {
+    font-size: 1.2rem;
+    color: #4a90a4;
+    font-weight: 600;
+}
+
+.no-bookings {
+    text-align: center;
+    color: #999;
+    padding: 40px;
+}
+
+@media (max-width: 480px) {
+    .time-slots {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    header h1 {
+        font-size: 2rem;
+    }
+}

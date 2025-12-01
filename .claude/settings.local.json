@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install)",
+      "Bash(cmd /c \"cd /d c:\\Users\\sanad\\Desktop\\barber && npm install\")",
+      "Bash(/c/Program Files/nodejs/npm install)",
+      "Bash(powershell -Command \"cd ''c:\\Users\\sanad\\Desktop\\barber''; npm install\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

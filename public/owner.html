@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard - Barber Shop</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .date-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .date-filter input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .date-filter button {
+            padding: 10px 20px;
+            background: #4a90a4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #4a90a4 0%, #357a8c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            opacity: 0.9;
+        }
+
+        .notification-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            border-bottom-color: #4a90a4;
+            color: #4a90a4;
+            font-weight: 600;
+        }
+
+        .tab:hover {
+            background: #f5f5f5;
+        }
+
+        .booking-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .booking-info {
+            flex: 1;
+        }
+
+        .booking-time {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4a90a4;
+        }
+
+        .booking-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .remove-btn:hover {
+            background: #c0392b;
+        }
+
+        .new-badge {
+            background: #27ae60;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .refresh-btn {
+            background: #f0f0f0;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .refresh-btn:hover {
+            background: #e0e0e0;
+        }
+
+        @media (max-width: 600px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container admin-container">
+        <header>
+            <div class="dashboard-header">
+                <div>
+                    <h1>📊 Owner Dashboard</h1>
+                    <p>Manage your appointments</p>
+                </div>
+                <button class="refresh-btn" onclick="loadDashboard()">
+                    🔄 Refresh
+                </button>
+            </div>
+        </header>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3 id="todayCount">0</h3>
+                <p>Today's Appointments</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="upcomingCount">0</h3>
+                <p>Upcoming</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="availableCount">0</h3>
+                <p>Available Today</p>
+            </div>
+        </div>
+
+        <div class="date-filter">
+            <input type="date" id="filterDate" value="">
+            <button onclick="filterByDate()">Filter</button>
+            <button onclick="showToday()">Today</button>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="today" onclick="switchTab('today')">
+                Today's Bookings
+            </div>
+            <div class="tab" data-tab="all" onclick="switchTab('all')">
+                All Bookings
+            </div>
+            <div class="tab" data-tab="notifications" onclick="switchTab('notifications')">
+                Notifications <span id="notificationBadge" class="notification-badge hidden">0</span>
+            </div>
+        </div>
+
+        <div id="content" class="bookings-list">
+            <!-- Content loaded dynamically -->
+        </div>
+    </div>
+
+    <script>
+        let allBookings = {};
+        let notifications = [];
+        let currentTab = 'today';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('filterDate').value = today;
+            loadDashboard();
+
+            // Auto-refresh every 30 seconds
+            setInterval(loadDashboard, 30000);
+        });
+
+        async function loadDashboard() {
+            try {
+                const [bookingsRes, notificationsRes] = await Promise.all([
+                    fetch('/api/bookings'),
+                    fetch('/api/notifications')
+                ]);
+
+                allBookings = await bookingsRes.json();
+                notifications = await notificationsRes.json();
+
+                updateStats();
+                updateNotificationBadge();
+                renderContent();
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        function updateStats() {
+            const today = new Date().toISOString().split('T')[0];
+            const todayBookings = allBookings[today] || [];
+
+            document.getElementById('todayCount').textContent = todayBookings.length;
+
+            // Count upcoming (excluding today)
+            let upcomingCount = 0;
+            Object.keys(allBookings).forEach(date => {
+                if (date > today) {
+                    upcomingCount += allBookings[date].length;
+                }
+            });
+            document.getElementById('upcomingCount').textContent = upcomingCount;
+
+            // Available slots today
+            const totalSlots = 16; // Total time slots available (8 AM to 11 PM)
+            const availableToday = totalSlots - todayBookings.length;
+            document.getElementById('availableCount').textContent = availableToday;
+        }
+
+        function updateNotificationBadge() {
+            const unreadCount = notifications.filter(n => !n.read).length;
+            const badge = document.getElementById('notificationBadge');
+
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+            renderContent();
+        }
+
+        function renderContent() {
+            const content = document.getElementById('content');
+
+            switch (currentTab) {
+                case 'today':
+                    renderTodayBookings(content);
+                    break;
+                case 'all':
+                    renderAllBookings(content);
+                    break;
+                case 'notifications':
+                    renderNotifications(content);
+                    break;
+            }
+        }
+
+        function renderTodayBookings(container) {
+            const today = new Date().toISOString().split('T')[0];
+            const bookings = allBookings[today] || [];
+
+            if (bookings.length === 0) {
+                container.innerHTML = '<div class="no-bookings">No appointments for today</div>';
+                return;
+            }
+
+            // Sort by time
+            bookings.sort((a, b) => a.time.localeCompare(b.time));
+
+            container.innerHTML = bookings.map(booking => `
+                <div class="booking-card">
+                    <div class="booking-info">
+                        <h3>${booking.customerName}</h3>
+                        <p>📞 ${booking.phone}</p>
+                    </div>
+                    <div class="booking-actions">
+                        <div class="booking-time">${formatTime(booking.time)}</div>
+                        <button class="remove-btn" onclick="removeBooking('${today}', ${booking.id})">Remove</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function removeBooking(date, id) {
+            if (!confirm('Are you sure you want to remove this appointment?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/bookings/${date}/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    loadDashboard();
+                } else {
+                    alert(data.message || 'Failed to remove booking');
+                }
+            } catch (error) {
+                console.error('Error removing booking:', error);
+                alert('An error occurred while removing the booking');
+            }
+        }
+
+        function renderAllBookings(container) {
+            const dates = Object.keys(allBookings).sort();
+
+            if (dates.length === 0) {
+                container.innerHTML = '<div class="no-bookings">No bookings yet</div>';
+                return;
+            }
+
+            let html = '';
+            dates.forEach(date => {
+                const bookings = allBookings[date].sort((a, b) => a.time.localeCompare(b.time));
+                html += `<h3 style="margin: 20px 0 10px; color: #333;">${formatDate(date)}</h3>`;
+                bookings.forEach(booking => {
+                    html += `
+                        <div class="booking-card">
+                            <div class="booking-info">
+                                <h3>${booking.customerName}</h3>
+                                <p>📞 ${booking.phone}</p>
+                            </div>
+                            <div class="booking-actions">
+                                <div class="booking-time">${formatTime(booking.time)}</div>
+                                <button class="remove-btn" onclick="removeBooking('${date}', ${booking.id})">Remove</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderNotifications(container) {
+            if (notifications.length === 0) {
+                container.innerHTML = '<div class="no-bookings">No notifications</div>';
+                return;
+            }
+
+            container.innerHTML = notifications.map(n => `
+                <div class="booking-card" style="${!n.read ? 'background: #e3f2fd;' : ''}">
+                    <div class="booking-info">
+                        <h3>${n.customerName} ${!n.read ? '<span class="new-badge">NEW</span>' : ''}</h3>
+                        <p>📞 ${n.phone}</p>
+                        <p>📅 ${formatDate(n.date)} at ${formatTime(n.time)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterByDate() {
+            const date = document.getElementById('filterDate').value;
+            const content = document.getElementById('content');
+            const bookings = allBookings[date] || [];
+
+            if (bookings.length === 0) {
+                content.innerHTML = `<div class="no-bookings">No appointments for ${formatDate(date)}</div>`;
+                return;
+            }
+
+            bookings.sort((a, b) => a.time.localeCompare(b.time));
+
+            content.innerHTML = `
+                <h3 style="margin-bottom: 15px; color: #333;">${formatDate(date)}</h3>
+                ${bookings.map(booking => `
+                    <div class="booking-card">
+                        <div class="booking-info">
+                            <h3>${booking.customerName}</h3>
+                            <p>📞 ${booking.phone}</p>
+                        </div>
+                        <div class="booking-actions">
+                            <div class="booking-time">${formatTime(booking.time)}</div>
+                            <button class="remove-btn" onclick="removeBooking('${date}', ${booking.id})">Remove</button>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function showToday() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('filterDate').value = today;
+            switchTab('today');
+        }
+
+        function formatTime(time) {
+            const [hours, minutes] = time.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const hour12 = hour % 12 || 12;
+            return `${hour12}:${minutes} ${ampm}`;
+        }
+
+        function formatDate(dateStr) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateStr).toLocaleDateString('en-US', options);
+        }
+    </script>
+</body>
+</html>
